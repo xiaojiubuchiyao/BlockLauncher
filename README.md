@@ -7,15 +7,13 @@
 
 > **关于 OpenLauncher**
 >
-> 本项目基于 **OpenLauncher** 启动器二次开发。OpenLauncher 由社区开发者编写，以 GPL-3.0 开源；
-> **红河素材站（honghemc.cn）只是收录、展示并提供原版下载页，不是它的开发方**
-> （该站自己的免责声明也写明了：OpenLauncher 由社区开发，与其没有隶属或合作关系）。
+> 本项目基于 **OpenLauncher** 启动器二次开发。OpenLauncher 由社区开发者编写，以 GPL-3.0 开源。
 >
 > 感谢 OpenLauncher 的作者与贡献者——没有他们的工作，就没有 Block Launcher。
 > 上游代码版权归其作者所有；本发行版只做了改名、换更新通道，以及界面和功能上的调整，
 > 与上游那套发行版互不隶属、互不干扰。
 >
-> 原版 OpenLauncher 的收录页：<https://honghemc.cn/app/openlauncher.html>
+> 原版 OpenLauncher：<https://honghemc.cn/app/openlauncher.html>
 
 ---
 
@@ -96,9 +94,6 @@ docs/           维护文档
 本项目的代码基础来自 OpenLauncher —— 一个由社区开发、GPL-3.0 开源的启动器项目，
 作者欢迎他人在其基础上开发自己的发行版。Block Launcher 是其中一套独立发行版：
 有独立的更新通道、独立的签名钥匙，与上游互不干扰。
-
-需要说明的是，**红河素材站（honghemc.cn）是原版的收录与下载站，不是开发方**，
-它和 OpenLauncher 项目本身没有隶属关系；本项目的致谢对象是 OpenLauncher 的代码作者与贡献者。
 
 ## 声明
 
