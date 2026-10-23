@@ -10,8 +10,6 @@
 > 本项目基于 **OpenLauncher** 启动器二次开发。OpenLauncher 由社区开发者编写，以 GPL-3.0 开源。
 >
 > 感谢 OpenLauncher 的作者与贡献者——没有他们的工作，就没有 Block Launcher。
-> 上游代码版权归其作者所有；本发行版只做了改名、换更新通道，以及界面和功能上的调整，
-> 与上游那套发行版互不隶属、互不干扰。
 >
 > 原版 OpenLauncher：<https://honghemc.cn/app/openlauncher.html>
 
