@@ -1,0 +1,212 @@
+<Window x:Class="BlockLauncher.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Block Launcher" Width="1080" Height="700" MinWidth="880" MinHeight="560"
+        WindowStartupLocation="CenterScreen" Background="{DynamicResource Bg}"
+        FontFamily="{StaticResource UiFont}" Foreground="{DynamicResource Text}"
+        UseLayoutRounding="True" SnapsToDevicePixels="True" Icon="Assets/icon.png"
+        AllowDrop="True"
+        PreviewDragEnter="Window_PreviewDragEnter"
+        PreviewDragOver="Window_PreviewDragOver"
+        PreviewDragLeave="Window_PreviewDragLeave"
+        Drop="Window_Drop"
+        StateChanged="Window_StateChanged">
+    <WindowChrome.WindowChrome>
+        <!-- CaptionHeight 覆盖整条顶栏：整条都能拖动窗口 -->
+        <WindowChrome CaptionHeight="52" ResizeBorderThickness="6" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolVis"/>
+    </Window.Resources>
+
+    <Grid x:Name="Root">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="52"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ============ 背景：彩色网格 + 光斑 + 像素块 ============ -->
+        <Grid x:Name="Backdrop" Grid.RowSpan="2" ClipToBounds="True" IsHitTestVisible="False">
+            <Rectangle Fill="{DynamicResource Bg}"/>
+
+            <!-- 用户自定义背景图：模糊掉，只当玻璃的底衬 -->
+            <Image x:Name="BgImage" Stretch="UniformToFill" Opacity="0.5">
+                <Image.Effect>
+                    <BlurEffect Radius="40" RenderingBias="Performance"/>
+                </Image.Effect>
+            </Image>
+
+            <!-- 三团柔光 -->
+            <Ellipse Width="1000" Height="860" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="-360,-340,0,0">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#B37496FF" Offset="0"/>
+                        <GradientStop Color="#007496FF" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+            <Ellipse Width="860" Height="760" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,-280,-300,0">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#B3FFA6D2" Offset="0"/>
+                        <GradientStop Color="#00FFA6D2" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+            <Ellipse Width="900" Height="760" HorizontalAlignment="Left" VerticalAlignment="Bottom" Margin="160,0,0,-360">
+                <Ellipse.Fill>
+                    <RadialGradientBrush>
+                        <GradientStop Color="#B37DEFBE" Offset="0"/>
+                        <GradientStop Color="#007DEFBE" Offset="1"/>
+                    </RadialGradientBrush>
+                </Ellipse.Fill>
+            </Ellipse>
+        </Grid>
+
+        <!-- ============ 顶栏 ============ -->
+        <Grid Grid.Row="0" MouseRightButtonUp="Title_MouseRightButtonUp">
+            <!-- 左：标识 -->
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="18,0,0,0">
+                <Image Source="Assets/icon.png" Width="22" Height="22" RenderOptions.BitmapScalingMode="HighQuality"/>
+                <TextBlock Text="Block Launcher" FontSize="13.5" FontWeight="SemiBold" VerticalAlignment="Center" Margin="9,0,0,0"/>
+                <TextBlock x:Name="VersionTag" Text="v0.1" FontSize="10" Foreground="{DynamicResource Text2}"
+                           VerticalAlignment="Center" Margin="9,1,0,0"/>
+            </StackPanel>
+
+            <!-- 中：导航（无容器，直接浮在背景上） -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center"
+                        WindowChrome.IsHitTestVisibleInChrome="True">
+                <RadioButton x:Name="NavLaunch" GroupName="nav" Style="{StaticResource TopNav}" Tag="&#xE768;" Content="启动" Checked="Nav_Checked"/>
+                <RadioButton x:Name="NavDownload" GroupName="nav" Style="{StaticResource TopNav}" Tag="&#xE896;" Content="下载" Checked="Nav_Checked"/>
+                <RadioButton x:Name="NavSettings" GroupName="nav" Style="{StaticResource TopNav}" Tag="&#xE713;" Content="设置" Checked="Nav_Checked"/>
+                <RadioButton x:Name="NavMore" GroupName="nav" Style="{StaticResource TopNav}" Tag="&#xE712;" Content="更多" Checked="Nav_Checked"/>
+            </StackPanel>
+
+            <!-- 右：任务 + Windows 窗口按钮（最小化 / 最大化·还原 / 关闭） -->
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top"
+                        WindowChrome.IsHitTestVisibleInChrome="True">
+                <Button x:Name="TasksButton" Style="{StaticResource TitleIcon}" Width="Auto" Padding="0" Click="Tasks_Click" ToolTip="任务列表">
+                    <Border Padding="14,0" Height="52">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="&#xE8FD;" FontFamily="{StaticResource Icons}" FontSize="12" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="TaskCount" Text="" FontFamily="{StaticResource UiFont}" FontSize="11.5" Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </Button>
+                <Button Style="{StaticResource TitleIcon}" Content="&#xE921;" Click="Min_Click" ToolTip="最小化"/>
+                <Button x:Name="MaxButton" Style="{StaticResource TitleIcon}" Content="&#xE922;" Click="Max_Click" ToolTip="最大化"/>
+                <Button Style="{StaticResource CaptionClose}" Content="&#xE8BB;" Click="Close_Click" ToolTip="关闭"/>
+            </StackPanel>
+        </Grid>
+
+        <!-- ============ 页面 ============ -->
+        <ContentControl x:Name="PageHost" Grid.Row="1" Focusable="False"/>
+
+        <!-- ============ 任务抽屉 ============ -->
+        <Grid x:Name="TaskLayer" Grid.Row="1" Visibility="Collapsed">
+            <Border x:Name="TaskScrim" Background="#33101528" MouseDown="TaskLayer_MouseDown" Opacity="0"/>
+            <Border x:Name="TaskDrawer" HorizontalAlignment="Right" Width="380" Background="#F8FBFF" BorderBrush="#B3FFFFFF" BorderThickness="1"
+                    CornerRadius="22,0,0,0">
+                <Border.RenderTransform>
+                    <TranslateTransform x:Name="TaskDrawerShift" X="0"/>
+                </Border.RenderTransform>
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="40" ShadowDepth="-8" Direction="180" Opacity="0.18" Color="#122040"/>
+                </Border.Effect>
+                <DockPanel>
+                    <Grid DockPanel.Dock="Top" Margin="20,16,14,8">
+                        <TextBlock Text="任务" Style="{StaticResource H1}"/>
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <Button Style="{StaticResource Ghost}" Content="清除已完成" Click="ClearTasks_Click"/>
+                            <Button Style="{StaticResource Ghost}" Click="Tasks_Click" ToolTip="关闭">
+                                <TextBlock Text="&#xE8BB;" Style="{StaticResource Icon}" FontSize="11"/>
+                            </Button>
+                        </StackPanel>
+                    </Grid>
+                    <Grid>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto">
+                            <ItemsControl x:Name="TaskList" Margin="16,0,16,16">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#66FFFFFF" BorderBrush="#80FFFFFF" BorderThickness="1" CornerRadius="14" Padding="13,11" Margin="0,0,0,9">
+                                            <StackPanel>
+                                                <Grid>
+                                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" Margin="0,0,70,0"/>
+                                                    <TextBlock Text="{Binding StateText}" HorizontalAlignment="Right" Style="{StaticResource Sub}"/>
+                                                </Grid>
+                                                <ProgressBar Margin="0,9,0,7" Maximum="1" Value="{Binding Progress, Mode=OneWay}" IsIndeterminate="{Binding Indeterminate, Mode=OneWay}"
+                                                             Visibility="{Binding IsActive, Converter={StaticResource BoolVis}}"/>
+                                                <TextBlock Text="{Binding Detail}" Style="{StaticResource Sub}" MaxHeight="120" Margin="0,2,0,0"/>
+                                                <Grid Margin="0,4,0,0">
+                                                    <TextBlock Style="{StaticResource Sub}">
+                                                        <Run Text="{Binding ProgressText, Mode=OneWay}"/>
+                                                        <Run Text="  "/>
+                                                        <Run Text="{Binding SpeedText, Mode=OneWay}"/>
+                                                    </TextBlock>
+                                                    <Button Content="取消" Style="{StaticResource Ghost}" Padding="6,2" HorizontalAlignment="Right" Click="CancelTask_Click"
+                                                            Visibility="{Binding IsActive, Converter={StaticResource BoolVis}}"/>
+                                                </Grid>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </ScrollViewer>
+                        <TextBlock x:Name="NoTasks" Text="暂时没有任务" Style="{StaticResource Sub}" Panel.ZIndex="1"
+                                   HorizontalAlignment="Center" VerticalAlignment="Top" Margin="0,40,0,0" IsHitTestVisible="False"/>
+                    </Grid>
+                </DockPanel>
+            </Border>
+        </Grid>
+
+        <!-- ============ 底部轻提示（纯文字，不要胶囊底板） ============ -->
+        <Border x:Name="ToastBox" Grid.Row="1" VerticalAlignment="Bottom" HorizontalAlignment="Center" Margin="0,0,0,32"
+                Background="Transparent" Padding="0" Visibility="Collapsed" IsHitTestVisible="False" MaxWidth="640">
+            <Border.Effect>
+                <!-- 只给文字一圈极淡的白光，压在彩虹底上也能看清；不使用任何可见底板 -->
+                <DropShadowEffect BlurRadius="14" ShadowDepth="0" Direction="270" Opacity="0.9" Color="#FFFFFF"/>
+            </Border.Effect>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock x:Name="ToastIcon" Text="&#xE946;" FontFamily="{StaticResource Icons}" Foreground="{DynamicResource Accent}"
+                           FontSize="12" VerticalAlignment="Center" Margin="0,1,8,0"/>
+                <TextBlock x:Name="ToastText" Foreground="{DynamicResource Text}" FontSize="13" FontWeight="SemiBold"
+                           TextWrapping="Wrap" VerticalAlignment="Center"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ============ 拖放整合包提示层 ============ -->
+        <Grid x:Name="DropOverlay" Grid.RowSpan="2" Visibility="Collapsed" IsHitTestVisible="False" Background="#730A1020">
+            <Rectangle x:Name="DropFrame" Stroke="{DynamicResource Accent}" StrokeThickness="2" StrokeDashArray="5 3"
+                       RadiusX="18" RadiusY="18" Margin="24" Fill="#0DFFFFFF"/>
+            <Border x:Name="DropCard" HorizontalAlignment="Center" VerticalAlignment="Center" Background="#FAFFFFFF"
+                    CornerRadius="18" Padding="44,32" BorderBrush="#33FFFFFF" BorderThickness="1" MaxWidth="620"
+                    RenderTransformOrigin="0.5,0.5">
+                <Border.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform x:Name="DropCardScale" ScaleX="1" ScaleY="1"/>
+                        <TranslateTransform x:Name="DropCardShift" Y="0"/>
+                    </TransformGroup>
+                </Border.RenderTransform>
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="44" ShadowDepth="10" Direction="270" Opacity="0.3" Color="#0A1020"/>
+                </Border.Effect>
+                <StackPanel>
+                    <TextBlock x:Name="DropIcon" Text="&#xE7B8;" FontFamily="{StaticResource Icons}" FontSize="40"
+                               Foreground="{DynamicResource Accent}" HorizontalAlignment="Center"/>
+                    <TextBlock x:Name="DropTitle" Text="松开即可安装整合包" FontSize="17" FontWeight="SemiBold"
+                               Foreground="{DynamicResource Text}" HorizontalAlignment="Center" Margin="0,14,0,0"
+                               TextAlignment="Center" MaxWidth="520" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="DropSub" FontSize="12.6" Foreground="{DynamicResource Text2}"
+                               HorizontalAlignment="Center" Margin="0,8,0,0" TextAlignment="Center"
+                               MaxWidth="520" TextWrapping="Wrap" LineHeight="20"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- ============ 对话框层 ============ -->
+        <Grid x:Name="DialogLayer" Grid.RowSpan="2" Visibility="Collapsed">
+            <Border x:Name="DialogScrim" Background="#59101828" Opacity="0"/>
+            <ContentControl x:Name="DialogHost" HorizontalAlignment="Center" VerticalAlignment="Center" Focusable="False"/>
+        </Grid>
+    </Grid>
+</Window>

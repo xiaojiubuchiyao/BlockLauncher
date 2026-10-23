@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenLauncher · Apple 风格 UI 方案（3 版）</title>
+<style>
+  :root{
+    --font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "PingFang SC", "Microsoft YaHei UI", "Segoe UI", system-ui, sans-serif;
+    --mono: "SF Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  }
+  *{box-sizing:border-box; -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;}
+  html,body{margin:0;}
+  body{
+    font-family:var(--font);
+    color:#1D1D1F;
+    background:
+      radial-gradient(1100px 640px at 12% -12%, #E8EEFF 0%, rgba(232,238,255,0) 62%),
+      radial-gradient(900px 560px at 96% 2%, #FDEDF4 0%, rgba(253,237,244,0) 58%),
+      #F5F5F7;
+    padding:26px 22px 70px;
+    min-height:100vh;
+  }
+
+  /* ---------- 顶部：版本切换 ---------- */
+  .topbar{max-width:980px; margin:0 auto 18px; display:flex; align-items:center; gap:18px;}
+  .brand{font-size:13px; font-weight:600; letter-spacing:.2px; color:#1D1D1F;}
+  .brand span{font-weight:400; color:#86868B; margin-left:6px;}
+  .seg{
+    position:relative; display:flex; padding:3px; gap:2px; margin-left:auto;
+    background:rgba(118,118,128,.12); border-radius:999px;
+  }
+  .seg .thumb{
+    position:absolute; top:3px; left:0; height:calc(100% - 6px); border-radius:999px;
+    background:#fff; box-shadow:0 1px 3px rgba(0,0,0,.14), 0 0 0 .5px rgba(0,0,0,.04);
+    transition:transform .32s cubic-bezier(.32,.72,0,1), width .32s cubic-bezier(.32,.72,0,1);
+    pointer-events:none;
+  }
+  .seg button{
+    position:relative; z-index:1; border:0; background:transparent; cursor:pointer;
+    font:inherit; font-size:12.5px; font-weight:500; color:#3A3A3C;
+    padding:6px 15px; border-radius:999px; white-space:nowrap; transition:color .2s;
+  }
+  .seg button.on{color:#1D1D1F; font-weight:600;}
+
+  /* ---------- 说明 ---------- */
+  .meta{
+    max-width:980px; margin:0 auto 14px; display:flex; gap:14px; align-items:flex-start;
+    font-size:12px; line-height:1.6; color:#6E6E73;
+  }
+  .meta b{color:#1D1D1F; font-weight:600;}
+  .meta .dot{width:6px; height:6px; border-radius:50%; background:#0A84FF; margin-top:7px; flex:none;}
+
+  /* ---------- 窗口舞台 ---------- */
+  .winwrap{position:relative; width:100%; max-width:980px; margin:0 auto; aspect-ratio:980/620;}
+  .win{
+    position:absolute; top:0; left:0; width:980px; height:620px;
+    transform-origin:top left; transform:scale(var(--s,1));
+    border-radius:12px; overflow:hidden;
+    box-shadow:
+      0 0 0 .5px rgba(0,0,0,.16),
+      0 2px 6px rgba(0,0,0,.06),
+      0 24px 60px rgba(23,32,63,.16);
+    display:none;
+  }
+  .win.on{display:flex;}
+
+  svg.ic{width:16px; height:16px; flex:none; display:block;}
+  svg.ic path, svg.ic circle, svg.ic rect, svg.ic line{
+    fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round;
+  }
+  svg.ic.fill path{fill:currentColor; stroke:none;}
+
+  /* =========================================================
+     A · macOS 侧边栏
+     ========================================================= */
+  .v-a{background:#fff; flex-direction:row;}
+  .v-a .side{
+    width:226px; flex:none; display:flex; flex-direction:column;
+    background:#F1F1F3;
+    background-image:linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,0));
+    border-right:.5px solid rgba(0,0,0,.1);
+    padding:12px 10px 10px;
+  }
+  .lights{display:flex; gap:8px; padding:3px 4px 0; margin-bottom:14px;}
+  .lights i{width:12px; height:12px; border-radius:50%; display:block;}
+  .lights .r{background:#FF5F57; box-shadow:inset 0 0 0 .5px rgba(0,0,0,.12);}
+  .lights .y{background:#FEBC2E; box-shadow:inset 0 0 0 .5px rgba(0,0,0,.12);}
+  .lights .g{background:#28C840; box-shadow:inset 0 0 0 .5px rgba(0,0,0,.12);}
+
+  .side-head{display:flex; align-items:center; gap:9px; padding:0 8px 14px;}
+  .appicon{
+    width:30px; height:30px; border-radius:7px; flex:none;
+    background:linear-gradient(160deg,#5AC8FA,#0A84FF 46%,#5E5CE6);
+    box-shadow:0 1px 2px rgba(0,0,0,.18), inset 0 .5px 0 rgba(255,255,255,.5);
+    position:relative;
+  }
+  .appicon:after{
+    content:""; position:absolute; inset:0; border-radius:7px;
+    background:
+      linear-gradient(90deg, transparent 44%, rgba(255,255,255,.85) 44%, rgba(255,255,255,.85) 56%, transparent 56%),
+      linear-gradient(180deg, transparent 44%, rgba(255,255,255,.85) 44%, rgba(255,255,255,.85) 56%, transparent 56%);
+    opacity:.5;
+  }
+  .appname{font-size:12.5px; font-weight:600; letter-spacing:.1px;}
+  .appver{font-size:10.5px; color:#8A8A8E; margin-top:1px;}
+
+  .snav{display:flex; flex-direction:column; gap:1px;}
+  .snav-item{
+    display:flex; align-items:center; gap:9px; height:30px; padding:0 9px;
+    border-radius:7px; font-size:13px; color:#3A3A3C; cursor:default;
+    transition:background .14s;
+  }
+  .snav-item svg.ic{width:15px; height:15px; color:#0A84FF; opacity:.9;}
+  .snav-item:hover{background:rgba(0,0,0,.045);}
+  .snav-item.on{background:rgba(0,0,0,.075); color:#1D1D1F; font-weight:600;}
+  .snav-item.on svg.ic{color:#0A84FF; opacity:1;}
+  .snav-sep{height:1px; background:rgba(0,0,0,.07); margin:8px 9px;}
+  .side-foot{
+    margin-top:auto; display:flex; align-items:center; gap:8px;
+    padding:9px 10px; border-radius:8px; background:rgba(255,255,255,.7);
+    box-shadow:0 0 0 .5px rgba(0,0,0,.06);
+    font-size:11.5px; color:#3A3A3C;
+  }
+  .pulse{width:7px; height:7px; border-radius:50%; background:#30D158; box-shadow:0 0 0 3px rgba(48,209,88,.18);}
+
+  .v-a .main{flex:1; display:flex; flex-direction:column; min-width:0; background:#FFFFFF;}
+  .mhead{
+    height:52px; flex:none; display:flex; align-items:center; gap:12px;
+    padding:0 20px 0 24px; border-bottom:.5px solid rgba(0,0,0,.07);
+  }
+  .mhead h1{font-size:15px; font-weight:600; margin:0; letter-spacing:.1px;}
+  .mhead .spacer{flex:1;}
+  .toolbtn{
+    width:28px; height:28px; border-radius:7px; display:grid; place-items:center;
+    color:#6E6E73; background:transparent; border:0; cursor:default;
+  }
+  .toolbtn:hover{background:rgba(0,0,0,.05);}
+  .mbody{flex:1; overflow:hidden; padding:18px 24px 22px; display:flex; flex-direction:column; gap:14px;}
+
+  .card{
+    background:#fff; border-radius:12px; padding:18px;
+    box-shadow:0 0 0 .5px rgba(0,0,0,.09), 0 1px 2px rgba(0,0,0,.04);
+  }
+  .hero{display:flex; align-items:center; gap:16px;}
+  .avatar{
+    width:60px; height:60px; border-radius:15px; flex:none; position:relative; overflow:hidden;
+    background:linear-gradient(160deg,#9CC8FF,#5B9BFF);
+    box-shadow:inset 0 0 0 .5px rgba(0,0,0,.08);
+  }
+  .avatar:after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(180deg, rgba(255,255,255,.28), rgba(255,255,255,0) 52%);
+  }
+  .avatar svg{position:absolute; inset:0; margin:auto; width:26px; height:26px; color:rgba(255,255,255,.92); z-index:1;}
+  .hero .who{min-width:0;}
+  .hero .nm{font-size:16px; font-weight:600; letter-spacing:.1px;}
+  .hero .sub{font-size:11.5px; color:#8A8A8E; margin-top:3px; display:flex; align-items:center; gap:6px;}
+  .tag{
+    font-size:10.5px; padding:1px 6px; border-radius:5px; background:rgba(10,132,255,.1);
+    color:#0A6FD8; font-weight:500;
+  }
+  .launch{
+    margin-left:auto; height:44px; padding:0 26px; border-radius:10px; border:0; cursor:default;
+    background:linear-gradient(180deg,#2C8CFF,#0A7CFF); color:#fff;
+    font:inherit; font-size:13.5px; font-weight:600; letter-spacing:.2px;
+    box-shadow:0 1px 1px rgba(0,0,0,.06), 0 6px 16px rgba(10,124,255,.28), inset 0 .5px 0 rgba(255,255,255,.35);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; line-height:1.25;
+  }
+  .launch small{font-size:10px; font-weight:400; opacity:.85;}
+  .launch:hover{filter:brightness(1.04);}
+
+  .sec-title{
+    display:flex; align-items:baseline; gap:8px; font-size:12px; font-weight:600; color:#6E6E73;
+    letter-spacing:.3px; margin:2px 2px -2px;
+  }
+  .sec-title .more{margin-left:auto; font-size:11.5px; font-weight:400; color:#0A84FF;}
+
+  .vrow{
+    display:flex; align-items:center; gap:11px; padding:10px 12px; border-radius:9px;
+    transition:background .14s;
+  }
+  .vrow:hover{background:rgba(0,0,0,.035);}
+  .vrow + .vrow{margin-top:2px;}
+  .vdot{
+    width:30px; height:30px; border-radius:8px; flex:none; display:grid; place-items:center;
+    background:rgba(0,0,0,.04); color:#3A3A3C;
+  }
+  .vname{font-size:13px; font-weight:500;}
+  .vmeta{font-size:11px; color:#8A8A8E; margin-top:2px;}
+  .vright{margin-left:auto; font-size:11px; color:#8A8A8E; display:flex; align-items:center; gap:6px;}
+  .badge-ok{
+    font-size:10px; font-weight:600; color:#1B8F3E; background:rgba(48,209,88,.14);
+    padding:2px 7px; border-radius:99px;
+  }
+  .note{font-size:11.5px; line-height:1.75; color:#6E6E73;}
+  .note b{color:#1D1D1F; font-weight:600;}
+
+  .dl{padding:14px 16px;}
+  .dl-top{display:flex; align-items:baseline; gap:10px; font-size:12.5px; font-weight:600;}
+  .dl-top .m{margin-left:auto; font-size:11px; font-weight:400; color:#8A8A8E;}
+  .bar{height:5px; border-radius:99px; background:rgba(0,0,0,.07); margin-top:10px; overflow:hidden;}
+  .bar i{display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,#4AA8FF,#0A7CFF);}
+
+  /* =========================================================
+     B · 液态玻璃
+     ========================================================= */
+  .v-b{
+    flex-direction:column; position:relative;
+    background:
+      radial-gradient(900px 460px at 8% -6%, #A9C4FF 0%, rgba(169,196,255,0) 62%),
+      radial-gradient(760px 420px at 98% 4%, #FFC6DE 0%, rgba(255,198,222,0) 58%),
+      radial-gradient(820px 520px at 46% 112%, #9FEBC9 0%, rgba(159,235,201,0) 62%),
+      linear-gradient(158deg, #E9F0FF 0%, #F5EEFF 46%, #E7FBF2 100%);
+  }
+  .v-b .blocks{position:absolute; inset:0; opacity:.5; pointer-events:none;}
+  .v-b .blocks i{
+    position:absolute; display:block; border-radius:10px;
+    background:linear-gradient(160deg, rgba(255,255,255,.6), rgba(255,255,255,.08));
+    box-shadow:inset 0 0 0 .5px rgba(255,255,255,.5);
+  }
+  .glass{
+    background:rgba(255,255,255,.42);
+    -webkit-backdrop-filter:blur(36px) saturate(180%);
+    backdrop-filter:blur(36px) saturate(180%);
+    box-shadow:
+      0 0 0 .5px rgba(255,255,255,.7),
+      0 1px 0 rgba(255,255,255,.85) inset,
+      0 18px 40px rgba(31,45,90,.14);
+  }
+  .v-b .topbar2{
+    position:relative; z-index:2; display:flex; align-items:center; gap:12px;
+    padding:16px 22px 0;
+  }
+  .v-b .dots{display:flex; gap:8px;}
+  .v-b .dots i{width:12px; height:12px; border-radius:50%; display:block; background:rgba(255,255,255,.65); box-shadow:inset 0 0 0 .5px rgba(0,0,0,.1);}
+  .navpill{
+    margin:0 auto; display:flex; align-items:center; gap:2px; padding:5px;
+    border-radius:999px; position:relative; z-index:2;
+  }
+  .navpill a{
+    display:flex; align-items:center; gap:7px; padding:7px 15px; border-radius:999px;
+    font-size:12.5px; color:#3A3A3C; text-decoration:none; cursor:default;
+  }
+  .navpill a svg.ic{width:14px; height:14px; opacity:.75;}
+  .navpill a.on{
+    background:rgba(255,255,255,.85); color:#0A5BD8; font-weight:600;
+    box-shadow:0 1px 2px rgba(0,0,0,.1), 0 0 0 .5px rgba(255,255,255,.8);
+  }
+  .navpill a.on svg.ic{opacity:1;}
+
+  .v-b .stage2{position:relative; z-index:2; flex:1; padding:16px 26px 22px; display:flex; flex-direction:column; gap:14px; min-height:0;}
+  .ghost-avatar{
+    width:66px; height:66px; border-radius:50%; flex:none; position:relative;
+    background:linear-gradient(160deg,#FFD9A8,#FF9F9F 52%,#C8A6FF);
+    box-shadow:0 0 0 3px rgba(255,255,255,.6), 0 8px 20px rgba(180,120,150,.22);
+  }
+  .ghost-avatar:after{
+    content:""; position:absolute; inset:8px 8px auto 8px; height:22px; border-radius:50%;
+    background:linear-gradient(180deg, rgba(255,255,255,.55), rgba(255,255,255,0));
+  }
+  .b-hero{display:flex; align-items:center; gap:16px; padding:16px 18px; border-radius:22px;}
+  .b-hero .nm{font-size:17px; font-weight:600; letter-spacing:.1px;}
+  .b-hero .sub{font-size:11.5px; color:#5F6472; margin-top:4px;}
+  .b-launch{
+    margin-left:auto; height:46px; padding:0 24px; border-radius:999px; border:0; cursor:default;
+    background:linear-gradient(180deg, rgba(90,140,255,.98), rgba(52,92,235,.98));
+    color:#fff; font:inherit; font-size:13.5px; font-weight:600;
+    box-shadow:0 10px 24px rgba(60,100,220,.35), inset 0 .5px 0 rgba(255,255,255,.5);
+    position:relative; overflow:hidden; display:flex; align-items:center; gap:9px;
+  }
+  .b-launch:before{
+    content:""; position:absolute; left:6px; right:6px; top:0; height:52%;
+    background:linear-gradient(180deg, rgba(255,255,255,.38), rgba(255,255,255,0));
+    border-radius:999px; pointer-events:none;
+  }
+  .b-grid{display:grid; grid-template-columns:1fr 1fr; gap:14px; flex:none;}
+  .b-stats{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; flex:none;}
+  .b-stat{border-radius:16px; padding:11px 15px; font-size:11px; color:#5F6472; display:flex; align-items:center; gap:9px;}
+  .b-stat b{color:#1D1D1F; font-size:12.5px; font-weight:600;}
+  .b-stat .k{margin-left:auto; font-size:10.5px; color:#3A3A3C; background:rgba(255,255,255,.65); padding:2px 8px; border-radius:99px;}
+  .b-card{border-radius:20px; padding:16px 18px; display:flex; flex-direction:column; min-height:0;}
+  .b-card h3{margin:0 0 10px; font-size:12.5px; font-weight:600; color:#3A3A3C; display:flex; align-items:center; gap:7px;}
+  .b-row{display:flex; align-items:center; gap:10px; padding:9px 0; border-top:.5px solid rgba(0,0,0,.07); font-size:12.5px;}
+  .b-row:first-of-type{border-top:0;}
+  .b-row .m{margin-left:auto; font-size:11px; color:#7A8394;}
+  .pill2{
+    font-size:10.5px; padding:3px 9px; border-radius:999px;
+    background:rgba(255,255,255,.7); color:#3A3A3C; box-shadow:0 0 0 .5px rgba(0,0,0,.05);
+  }
+  .prog{height:5px; border-radius:99px; background:rgba(0,0,0,.08); overflow:hidden; margin-left:auto; width:82px; flex:none;}
+  .prog i{display:block; height:100%; border-radius:99px; background:linear-gradient(90deg,#4AA8FF,#6C5CE7);}
+
+  /* =========================================================
+     C · 列表（iOS 设置）
+     ========================================================= */
+  .v-c{background:#F2F2F7; flex-direction:column;}
+  .c-head{padding:14px 26px 0; display:flex; align-items:center; gap:10px;}
+  .c-head .dots{display:flex; gap:8px; margin-right:4px;}
+  .c-head .dots i{width:12px; height:12px; border-radius:50%; background:#D5D5DA;}
+  .c-title{padding:4px 26px 12px; font-size:31px; font-weight:700; letter-spacing:-.8px; line-height:1.15;}
+  .c-title small{display:block; font-size:12.5px; font-weight:400; color:#8A8A8E; letter-spacing:0; margin-top:5px;}
+  .c-seg{
+    margin:0 26px 14px; display:flex; gap:2px; padding:3px;
+    background:rgba(118,118,128,.12); border-radius:9px;
+  }
+  .c-seg span{
+    flex:1; text-align:center; padding:6px 0; font-size:12.5px; color:#3A3A3C;
+    border-radius:7px; font-weight:500;
+  }
+  .c-seg span.on{background:#fff; color:#1D1D1F; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,.1), 0 0 0 .5px rgba(0,0,0,.03);}
+  .c-body{flex:1; overflow:hidden; padding:0 26px 16px; display:flex; flex-direction:column; gap:14px; min-height:0;}
+  .grp{background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 0 0 .5px rgba(0,0,0,.05);}
+  .grp-h{font-size:11.5px; color:#8A8A8E; letter-spacing:.4px; font-weight:500; margin:0 0 -9px 4px;}
+  .row{
+    display:flex; align-items:center; gap:12px; min-height:44px; padding:0 14px;
+    position:relative; font-size:14px;
+  }
+  .row + .row:before{
+    content:""; position:absolute; left:46px; right:0; top:0; height:.5px; background:#E4E4E9;
+  }
+  .row.no-icon + .row:before{left:14px;}
+  .row .ricon{
+    width:26px; height:26px; border-radius:7px; flex:none; display:grid; place-items:center; color:#fff;
+  }
+  .row .val{margin-left:auto; color:#8A8A8E; font-size:13.5px;}
+  .chev{width:7px; height:12px; color:#C3C3C7; flex:none;}
+  .chev path{fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round;}
+  .c-launch{
+    margin:2px 0 0; height:50px; border:0; border-radius:12px; width:100%; cursor:default;
+    background:#0A7CFF; color:#fff; font:inherit; font-size:15.5px; font-weight:600; letter-spacing:.2px;
+    box-shadow:0 1px 1px rgba(0,0,0,.05), 0 8px 20px rgba(10,124,255,.24);
+    display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .c-launch small{font-size:11px; font-weight:400; opacity:.9;}
+
+  /* ---------- 底部脚注 ---------- */
+  .foot{max-width:980px; margin:22px auto 0; font-size:11.5px; color:#9A9AA0; line-height:1.7;}
+  .foot b{color:#6E6E73;}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">OpenLauncher<span>UI · Apple 风格 3 方案</span></div>
+  <div class="seg" id="seg">
+    <span class="thumb"></span>
+    <button class="on" data-v="a">A · 侧边栏</button>
+    <button data-v="b">B · 液态玻璃</button>
+    <button data-v="c">C · 列表</button>
+  </div>
+</div>
+
+<div class="meta">
+  <span class="dot"></span>
+  <div id="metaText"><b>A · macOS 侧边栏</b> — 最贴近 Mac 桌面软件的读法：左侧半透明侧栏放导航，右侧白色内容区 + 大留白卡片，标题栏换成红黄绿三个圆点。改造成本最低，最耐看。</div>
+</div>
+
+<div class="winwrap">
+
+  <!-- ================= A ================= -->
+  <div class="win v-a on" id="v-a">
+    <aside class="side">
+      <div class="lights"><i class="r"></i><i class="y"></i><i class="g"></i></div>
+      <div class="side-head">
+        <div class="appicon"></div>
+        <div>
+          <div class="appname">OpenLauncher</div>
+          <div class="appver">0.1.0</div>
+        </div>
+      </div>
+      <nav class="snav">
+        <div class="snav-item on">
+          <svg class="ic fill" viewBox="0 0 24 24"><path d="M8 5.6v12.8c0 .5.5.8.9.6l10-6.4a.7.7 0 0 0 0-1.2l-10-6.4a.7.7 0 0 0-.9.6z"/></svg>
+          启动
+        </div>
+        <div class="snav-item">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M12 4v10.5m0 0 3.6-3.6M12 14.5l-3.6-3.6M5 18.5h14"/></svg>
+          下载
+        </div>
+        <div class="snav-item">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M4 8h9M17.5 8H20M4 16h4M12.5 16H20"/><circle cx="15" cy="8" r="2.2"/><circle cx="10" cy="16" r="2.2"/></svg>
+          设置
+        </div>
+        <div class="snav-item">
+          <svg class="ic" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/></svg>
+          更多
+        </div>
+        <div class="snav-sep"></div>
+        <div class="snav-item">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg>
+          任务
+        </div>
+      </nav>
+      <div class="side-foot"><span class="pulse"></span> 1 个任务进行中</div>
+    </aside>
+
+    <main class="main">
+      <div class="mhead">
+        <h1>启动</h1>
+        <div class="spacer"></div>
+        <button class="toolbtn"><svg class="ic" viewBox="0 0 24 24"><path d="M12 5v9m0 0 3.5-3.5M12 14l-3.5-3.5M5 18h14"/></svg></button>
+        <button class="toolbtn"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6.5h16M4 12h16M4 17.5h10"/></svg></button>
+      </div>
+
+      <div class="mbody">
+        <div class="card hero">
+          <div class="avatar">
+            <svg viewBox="0 0 24 24"><path d="M12 12.2a3.4 3.4 0 1 0 0-6.8 3.4 3.4 0 0 0 0 6.8z" fill="currentColor"/><path d="M4.8 19.6c.7-3.3 3.6-5.2 7.2-5.2s6.5 1.9 7.2 5.2z" fill="currentColor"/></svg>
+          </div>
+          <div class="who">
+            <div class="nm">Steve</div>
+            <div class="sub">离线账号 <span class="tag">1.20.1 Forge</span></div>
+          </div>
+          <button class="launch">启动游戏<small>1.20.1-forge-47.2.0</small></button>
+        </div>
+
+        <div class="sec-title">最近版本<span class="more">全部 12 个 ›</span></div>
+        <div class="card" style="padding:8px">
+          <div class="vrow">
+            <div class="vdot"><svg class="ic fill" viewBox="0 0 24 24"><path d="M9 7.2v9.6c0 .4.4.6.7.4l7.4-4.8c.3-.2.3-.6 0-.8L9.7 6.8c-.3-.2-.7 0-.7.4z"/></svg></div>
+            <div>
+              <div class="vname">1.20.1 Forge</div>
+              <div class="vmeta">Forge 47.2.0 · 8 个 Mod</div>
+            </div>
+            <div class="vright"><span class="badge-ok">已就绪</span></div>
+          </div>
+          <div class="vrow">
+            <div class="vdot"><svg class="ic fill" viewBox="0 0 24 24"><path d="M9 7.2v9.6c0 .4.4.6.7.4l7.4-4.8c.3-.2.3-.6 0-.8L9.7 6.8c-.3-.2-.7 0-.7.4z"/></svg></div>
+            <div>
+              <div class="vname">1.21 Fabric</div>
+              <div class="vmeta">Fabric 0.15.11 · Fabric API</div>
+            </div>
+            <div class="vright">3 天前</div>
+          </div>
+          <div class="vrow">
+            <div class="vdot"><svg class="ic fill" viewBox="0 0 24 24"><path d="M9 7.2v9.6c0 .4.4.6.7.4l7.4-4.8c.3-.2.3-.6 0-.8L9.7 6.8c-.3-.2-.7 0-.7.4z"/></svg></div>
+            <div>
+              <div class="vname">1.20.4 原版</div>
+              <div class="vmeta">官方 · Java 21</div>
+            </div>
+            <div class="vright">上周</div>
+          </div>
+        </div>
+
+        <div class="card dl">
+          <div class="dl-top">正在下载 · 1.21 Fabric <span class="m">7.4 MB/s · 剩余 1 分 20 秒</span></div>
+          <div class="bar"><i style="width:38%"></i></div>
+        </div>
+
+        <div class="card">
+          <div class="note"><b>这个启动器没有服务器。</b>游戏、加载器、Mod 全部从官方源和公益镜像直连下载，版本列表实时获取；启动器自身的更新走签名清单，任何人都能做镜像，社区也能接手发版。</div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ================= B ================= -->
+  <div class="win v-b" id="v-b">
+    <div class="blocks">
+      <i style="left:70px; top:120px; width:74px; height:74px; transform:rotate(-6deg)"></i>
+      <i style="right:96px; top:88px; width:52px; height:52px; transform:rotate(9deg)"></i>
+      <i style="left:44%; bottom:64px; width:64px; height:64px; transform:rotate(4deg)"></i>
+    </div>
+
+    <div class="topbar2">
+      <div class="dots"><i></i><i></i><i></i></div>
+      <div class="navpill glass">
+        <a class="on"><svg class="ic fill" viewBox="0 0 24 24"><path d="M8 5.6v12.8c0 .5.5.8.9.6l10-6.4a.7.7 0 0 0 0-1.2l-10-6.4a.7.7 0 0 0-.9.6z"/></svg>启动</a>
+        <a><svg class="ic" viewBox="0 0 24 24"><path d="M12 4v10.5m0 0 3.6-3.6M12 14.5l-3.6-3.6M5 18.5h14"/></svg>下载</a>
+        <a><svg class="ic" viewBox="0 0 24 24"><path d="M4 8h9M17.5 8H20M4 16h4M12.5 16H20"/><circle cx="15" cy="8" r="2.2"/><circle cx="10" cy="16" r="2.2"/></svg>设置</a>
+        <a><svg class="ic" viewBox="0 0 24 24"><circle cx="6" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="18" cy="12" r="1.6"/></svg>更多</a>
+      </div>
+      <div style="width:52px"></div>
+    </div>
+
+    <div class="stage2">
+      <div class="b-hero glass">
+        <div class="ghost-avatar"></div>
+        <div>
+          <div class="nm">Steve</div>
+          <div class="sub">离线账号 · 1.20.1-forge-47.2.0 · 8 个 Mod</div>
+        </div>
+        <button class="b-launch">
+          <svg class="ic fill" viewBox="0 0 24 24"><path d="M8 5.6v12.8c0 .5.5.8.9.6l10-6.4a.7.7 0 0 0 0-1.2l-10-6.4a.7.7 0 0 0-.9.6z"/></svg>
+          启动游戏
+        </button>
+      </div>
+
+      <div class="b-grid">
+        <div class="b-card glass">
+          <h3>最近版本 <span class="pill2" style="margin-left:auto">12 个</span></h3>
+          <div class="b-row"><span class="pill2" style="background:rgba(48,209,88,.18); color:#14803A">●</span> 1.20.1 Forge <span class="m">已就绪</span></div>
+          <div class="b-row"><span class="pill2">●</span> 1.21 Fabric <span class="m">3 天前</span></div>
+          <div class="b-row"><span class="pill2">●</span> 1.20.4 原版 <span class="m">上周</span></div>
+          <div class="b-row"><span class="pill2">●</span> 1.19.2 Forge <span class="m">2 周前</span></div>
+          <div class="b-row"><span class="pill2">●</span> 1.18.2 原版 <span class="m">上个月</span></div>
+        </div>
+
+        <div class="b-card glass">
+          <h3>正在下载 <span class="pill2" style="margin-left:auto">1.21 Fabric</span></h3>
+          <div class="b-row" style="border-top:0">资源索引 <div class="prog"><i style="width:100%"></i></div></div>
+          <div class="b-row">游戏库 <div class="prog"><i style="width:62%"></i></div></div>
+          <div class="b-row">资源文件 <div class="prog"><i style="width:18%"></i></div></div>
+          <div class="b-row">前置 Mod <div class="prog"><i style="width:0"></i></div></div>
+          <div class="b-row" style="color:#5F6472; font-size:11.5px">7.4 MB/s · 剩余 1 分 20 秒 <span class="m">取消</span></div>
+        </div>
+      </div>
+
+      <div class="b-stats">
+        <div class="b-stat glass">镜像延迟 <b>BMCLAPI 24 ms</b><span class="k">自动</span></div>
+        <div class="b-stat glass">Java <b>21.0.2</b><span class="k">已就绪</span></div>
+        <div class="b-stat glass">磁盘剩余 <b>148 GB</b><span class="k">D:</span></div>
+      </div>
+
+      <div class="b-card glass" style="flex:none">
+        <div style="font-size:11.5px; line-height:1.8; color:#4A5162">
+          没有服务器，也不需要。游戏、加载器、Mod 从官方源与公益镜像直连下载；更新走签名清单，任何人都能镜像分发。
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= C ================= -->
+  <div class="win v-c" id="v-c">
+    <div class="c-head">
+      <div class="dots"><i></i><i></i><i></i></div>
+      <div style="flex:1"></div>
+      <div style="font-size:11px; color:#9A9AA0; display:flex; align-items:center; gap:6px">
+        <span style="width:6px;height:6px;border-radius:50%;background:#30D158"></span> 1 个任务进行中
+      </div>
+    </div>
+    <div class="c-title">启动<small>OpenLauncher 0.1.0 · 离线账号 Steve</small></div>
+
+    <div class="c-seg"><span class="on">启动</span><span>下载</span><span>设置</span><span>更多</span></div>
+
+    <div class="c-body">
+      <div>
+        <div class="grp-h">当前账号</div>
+        <div class="grp">
+          <div class="row">
+            <div class="ricon" style="background:linear-gradient(160deg,#8FC2FF,#5E9BFF)">
+              <svg class="ic" viewBox="0 0 24 24" style="width:15px;height:15px;color:#fff"><path d="M12 12a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z"/><path d="M5.5 19c.6-3 3.2-4.6 6.5-4.6s5.9 1.6 6.5 4.6"/></svg>
+            </div>
+            Steve
+            <span class="val">离线</span>
+            <svg class="chev" viewBox="0 0 8 13"><path d="M1.5 1.5 6 6.5l-4.5 5"/></svg>
+          </div>
+          <div class="row no-icon">
+            <span style="color:#8A8A8E">启动版本</span>
+            <span class="val" style="margin-left:auto">1.20.1 Forge</span>
+            <svg class="chev" viewBox="0 0 8 13"><path d="M1.5 1.5 6 6.5l-4.5 5"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <button class="c-launch">
+        <svg class="ic fill" viewBox="0 0 24 24" style="width:15px;height:15px;color:#fff"><path d="M8 5.6v12.8c0 .5.5.8.9.6l10-6.4a.7.7 0 0 0 0-1.2l-10-6.4a.7.7 0 0 0-.9.6z"/></svg>
+        启动游戏 <small>1.20.1-forge-47.2.0</small>
+      </button>
+
+      <div>
+        <div class="grp-h">最近版本</div>
+        <div class="grp">
+          <div class="row no-icon">1.20.1 Forge <span class="val">已就绪</span><svg class="chev" viewBox="0 0 8 13"><path d="M1.5 1.5 6 6.5l-4.5 5"/></svg></div>
+          <div class="row no-icon">1.21 Fabric <span class="val">3 天前</span><svg class="chev" viewBox="0 0 8 13"><path d="M1.5 1.5 6 6.5l-4.5 5"/></svg></div>
+          <div class="row no-icon" style="color:#0A7CFF">全部 12 个版本<svg class="chev" viewBox="0 0 8 13"><path d="M1.5 1.5 6 6.5l-4.5 5"/></svg></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="grp-h">当前版本</div>
+        <div class="grp">
+          <div class="row no-icon">打开游戏目录<svg class="chev" viewBox="0 0 8 13"><path d="M1.5 1.5 6 6.5l-4.5 5"/></svg></div>
+          <div class="row no-icon">管理 Mod <span class="val">8 个</span><svg class="chev" viewBox="0 0 8 13"><path d="M1.5 1.5 6 6.5l-4.5 5"/></svg></div>
+          <div class="row no-icon">导出启动脚本<svg class="chev" viewBox="0 0 8 13"><path d="M1.5 1.5 6 6.5l-4.5 5"/></svg></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="foot">
+  <b>共同点</b>：三种都用 Apple 的系统蓝 #0A7CFF 作强调色、圆角 10–24px、发丝线分隔（0.5px）、超大留白、去掉渐变标题栏。<b>差异</b>：A 是桌面范（侧栏），B 是 visionOS 玻璃范（悬浮 + 模糊），C 是 iOS 列表范（分组 + 行高 44px）。
+</div>
+
+<script>
+  (function(){
+    var winwrap = document.querySelector('.winwrap');
+    function fit(){
+      var s = winwrap.clientWidth / 980;
+      document.querySelectorAll('.win').forEach(function(w){ w.style.setProperty('--s', s); });
+      winwrap.style.height = (620 * s) + 'px';
+    }
+    window.addEventListener('resize', fit);
+
+    var meta = {
+      a: '<b>A · macOS 侧边栏</b> — 最贴近 Mac 桌面软件的读法：左侧半透明侧栏放导航，右侧白色内容区 + 大留白卡片，标题栏换成红黄绿三个圆点。改造成本最低，最耐看。',
+      b: '<b>B · 液态玻璃</b> — visionOS / iOS 26 的路子：壁纸之上浮着磨砂玻璃卡片，顶部胶囊导航。视觉冲击最大，但需要真实模糊（WPF 要额外做背景采样），实现最重。',
+      c: '<b>C · 列表</b> — iOS「设置」的读法：大标题 + 分段控件 + 分组行列表 + 发丝分隔线。信息密度最高、最克制，适合版本和 Mod 这类长列表。'
+    };
+
+    var seg = document.getElementById('seg');
+    var thumb = seg.querySelector('.thumb');
+    var btns = seg.querySelectorAll('button');
+
+    function moveThumb(btn){
+      thumb.style.width = btn.offsetWidth + 'px';
+      thumb.style.transform = 'translateX(' + btn.offsetLeft + 'px)';
+    }
+
+    btns.forEach(function(b){
+      b.addEventListener('click', function(){
+        btns.forEach(function(x){ x.classList.remove('on'); });
+        b.classList.add('on');
+        moveThumb(b);
+        var v = b.dataset.v;
+        document.querySelectorAll('.win').forEach(function(w){
+          w.classList.toggle('on', w.id === 'v-' + v);
+        });
+        document.getElementById('metaText').innerHTML = meta[v];
+      });
+    });
+
+    function init(){
+      var h = (location.hash || '').replace('#', '').toLowerCase();
+      var target = seg.querySelector('button[data-v="' + h + '"]');
+      if (target && !target.classList.contains('on')) target.click();
+      moveThumb(seg.querySelector('button.on'));
+      fit();
+    }
+    window.addEventListener('load', init);
+    init();
+  })();
+</script>
+</body>
+</html>

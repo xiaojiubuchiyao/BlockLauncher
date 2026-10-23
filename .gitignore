@@ -1,0 +1,35 @@
+# ---------- 编译产物 ----------
+bin/
+obj/
+/dist/
+.vs/
+*.user
+*.suo
+*.pdb
+*.cache
+
+# ---------- 运行时生成的数据 ----------
+# 在仓库根目录直接运行时生成（便携模式在 exe 旁边建 Block Launcher/ 和 .minecraft/）
+/Block Launcher/
+/OpenLauncher/
+/.minecraft/
+
+# ---------- 发布私钥：绝对不要提交 ----------
+private-key.xml
+*.private.xml
+*.pfx
+*.p12
+*.snk
+
+# ---------- 本地工具与缓存 ----------
+.buildtools/
+
+# ---------- 工作台与本机记录（含个人笔记，不进公开仓库） ----------
+.workbuddy/
+
+# ---------- 界面截图（45 MB，只在本地用；README 用图请单独放 docs/images/） ----------
+design/shots/
+
+# ---------- 个人申请流水（含租户 ID / 对象 ID），不进公开仓库 ----------
+# 想公开这份文档就把下一行删掉
+docs/微软登录申请材料.md
