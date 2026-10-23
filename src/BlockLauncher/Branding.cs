@@ -39,7 +39,7 @@ namespace BlockLauncher
         /// <summary>
         /// 内置的更新清单地址。任意一个能访问到、且签名验证通过就行，
         /// 用户也可以在 设置 → 更新 里自己加镜像。顺序不代表优先级：会全部尝试并取版本最高的有效清单。
-        /// 全部指向本仓库（及其镜像），不掺入原作者的服务器 —— 那是另一套发行版的更新通道。
+        /// 全部指向本仓库（及其镜像），不掺入上游那套发行版的服务器 —— 那是另一条更新通道。
         /// </summary>
         public static readonly string[] DefaultUpdateSources =
         {
@@ -54,7 +54,7 @@ namespace BlockLauncher
         /// 内置信任的发布公钥（RSA，.NET XML 格式）。用 tools/Release 的 keygen 生成。
         /// 更新清单必须由其中任意一把私钥签名才会被接受。
         /// 维护者失联时，社区可以发布新公钥，由用户在 设置 → 更新 → 信任的发布者 里手动添加。
-        /// 这里只放本发行版自己的钥匙：原作者那把（12c461c3…）已移除，防止他人替本发行版签更新。
+        /// 这里只放本发行版自己的钥匙：上游那把（12c461c3…）已移除，防止他人替本发行版签更新。
         /// </summary>
         public static readonly string[] TrustedKeys =
         {
