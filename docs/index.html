@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Block Launcher — 去中心化的 Minecraft 启动器</title>
+<meta name="description" content="Block Launcher 是一个去中心化的 Minecraft Java 版启动器：单个 exe、没有服务器、不收集数据、开源 GPL-3.0。">
+<style>
+  :root{
+    --ink:#161a14;
+    --ink-2:#4a5245;
+    --ink-3:#767e71;
+    --line:#e3e7dd;
+    --bg:#fbfcf9;
+    --card:#ffffff;
+    --green:#3f7d20;
+    --green-soft:#eef5e6;
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--ink);
+    font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--green);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:1000px;margin:0 auto;padding:0 24px}
+
+  /* ---------- 顶栏 ---------- */
+  header{border-bottom:1px solid var(--line);background:rgba(251,252,249,.85);backdrop-filter:blur(8px);position:sticky;top:0;z-index:9}
+  .bar{display:flex;align-items:center;gap:12px;height:64px}
+  .bar img{width:28px;height:28px;image-rendering:pixelated;border-radius:6px}
+  .bar b{font-size:16px;letter-spacing:.2px}
+  .bar nav{margin-left:auto;display:flex;gap:22px;font-size:14px}
+  .bar nav a{color:var(--ink-2)}
+  @media (max-width:640px){ .bar nav{gap:14px;font-size:13px} }
+
+  /* ---------- Hero ---------- */
+  .hero{padding:76px 0 64px;text-align:center}
+  .hero .logo{
+    width:104px;height:104px;image-rendering:pixelated;
+    border-radius:24px;border:1px solid var(--line);background:#fff;
+    padding:10px;box-shadow:0 10px 30px rgba(63,125,32,.10);
+  }
+  h1{font-size:46px;line-height:1.15;margin:26px 0 12px;letter-spacing:-.5px}
+  .tag{font-size:18px;color:var(--ink-2);margin:0 auto;max-width:620px}
+  .btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:34px}
+  .btn{
+    display:inline-flex;align-items:center;gap:9px;
+    padding:13px 26px;border-radius:12px;font-size:15px;font-weight:600;
+    border:1px solid transparent;transition:transform .12s ease,box-shadow .12s ease;
+  }
+  .btn:hover{text-decoration:none;transform:translateY(-1px)}
+  .btn-main{background:var(--green);color:#fff;box-shadow:0 6px 18px rgba(63,125,32,.28)}
+  .btn-main:hover{box-shadow:0 10px 24px rgba(63,125,32,.34)}
+  .btn-ghost{background:#fff;color:var(--ink);border-color:var(--line)}
+  .meta{margin-top:16px;font-size:13px;color:var(--ink-3)}
+  .meta code{background:#f1f3ed;padding:2px 6px;border-radius:5px;font-size:12px}
+
+  /* ---------- 通用区块 ---------- */
+  section{padding:18px 0}
+  h2{font-size:26px;margin:46px 0 6px;letter-spacing:-.2px}
+  .sub{color:var(--ink-2);margin:0 0 28px;font-size:15px}
+
+  /* ---------- 特性 ---------- */
+  .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:860px){ .grid{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:560px){ .grid{grid-template-columns:1fr} }
+  .card{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:20px 20px 18px;
+  }
+  .card .ico{font-size:20px;line-height:1;margin-bottom:10px;display:block}
+  .card h3{font-size:15px;margin:0 0 6px}
+  .card p{margin:0;font-size:13.5px;color:var(--ink-2);line-height:1.6}
+
+  /* ---------- 三步 ---------- */
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;counter-reset:s}
+  @media (max-width:760px){ .steps{grid-template-columns:1fr} }
+  .step{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+  .step::before{
+    counter-increment:s;content:counter(s);
+    display:inline-flex;align-items:center;justify-content:center;
+    width:26px;height:26px;border-radius:8px;background:var(--green-soft);color:var(--green);
+    font-size:13px;font-weight:700;margin-bottom:12px;
+  }
+  .step h3{font-size:15px;margin:0 0 6px}
+  .step p{margin:0;font-size:13.5px;color:var(--ink-2)}
+
+  /* ---------- 说明块 ---------- */
+  .note{
+    background:var(--green-soft);border:1px solid #dbe8cc;border-radius:var(--radius);
+    padding:22px 24px;margin:34px 0 8px;font-size:14px;color:#33501f;
+  }
+  .note b{color:var(--green)}
+  .note p{margin:0 0 8px}
+  .note p:last-child{margin:0}
+
+  /* ---------- 页脚 ---------- */
+  footer{border-top:1px solid var(--line);margin-top:64px;padding:30px 0 44px;font-size:13px;color:var(--ink-3)}
+  footer .row{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+  footer a{color:var(--ink-2)}
+  footer .sep{margin-left:auto}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap bar">
+    <img src="icon.png" alt="Block Launcher">
+    <b>Block Launcher</b>
+    <nav>
+      <a href="#features">功能</a>
+      <a href="#start">开始使用</a>
+      <a href="#about">关于</a>
+      <a href="https://github.com/xiaojiubuchiyao/BlockLauncher">GitHub</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="hero">
+    <img class="logo" src="icon.png" alt="Block Launcher 图标">
+    <h1>Block Launcher</h1>
+    <p class="tag">去中心化的 Minecraft 启动器。单个 exe，没有服务器，不收集任何数据。<br>不包更新，但保证你不需要我们也能一直用下去。</p>
+
+    <div class="btns">
+      <a class="btn btn-main" href="https://github.com/xiaojiubuchiyao/BlockLauncher/releases/latest/download/BlockLauncher.exe">
+        ↓&nbsp; 下载 BlockLauncher.exe
+      </a>
+      <a class="btn btn-ghost" href="https://github.com/xiaojiubuchiyao/BlockLauncher">查看源码</a>
+    </div>
+    <p class="meta">当前版本 <code>v0.2.2</code> · 857 KB · Windows 10 / 11 双击即用，无需安装 .NET</p>
+  </div>
+
+  <section id="features">
+    <h2>它是什么</h2>
+    <p class="sub">一个能长期自己活下去的启动器，而不是又一个需要服务器养着的客户端。</p>
+
+    <div class="grid">
+      <div class="card">
+        <span class="ico">📦</span>
+        <h3>单个 exe，拷走就能用</h3>
+        <p>不需要安装、不需要运行库、不写注册表。整个文件夹复制到别的电脑，配置和存档一起带走。</p>
+      </div>
+      <div class="card">
+        <span class="ico">🌐</span>
+        <h3>没有后端</h3>
+        <p>游戏、加载器、Mod 全部从官方源和公益镜像直连获取，版本列表实时拉取，启动器里不内置任何版本号。</p>
+      </div>
+      <div class="card">
+        <span class="ico">🔏</span>
+        <h3>更新靠签名清单</h3>
+        <p>任何人都能镜像分发更新清单，只有签名对得上才会安装。维护者失联时，社区可以换钥匙接手。</p>
+      </div>
+      <div class="card">
+        <span class="ico">🔐</span>
+        <h3>不收集数据</h3>
+        <p>没有统计、没有账号体系、没有云端。令牌用 Windows DPAPI 加密，只存在你这台电脑上。</p>
+      </div>
+      <div class="card">
+        <span class="ico">🧩</span>
+        <h3>整合包拖进去就装</h3>
+        <p>支持 .mrpack / .zip，也支持没有清单的「绿色整合包」。每个整合包各用一个独立目录，删文件夹即卸载干净。</p>
+      </div>
+      <div class="card">
+        <span class="ico">🛠️</span>
+        <h3>崩溃能看出原因</h3>
+        <p>自动识别内存不足、Java 版本不对、缺前置、重复 Mod、Mixin 冲突、显卡驱动等常见问题并给出建议。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="start">
+    <h2>三步开始</h2>
+    <p class="sub">不用配置任何东西。</p>
+    <div class="steps">
+      <div class="step">
+        <h3>下载</h3>
+        <p>点上面的按钮，拿到 <code>BlockLauncher.exe</code>。</p>
+      </div>
+      <div class="step">
+        <h3>放进空文件夹</h3>
+        <p>双击运行。游戏文件会放在 exe 旁边的 <code>.minecraft</code>，配置在同级的 <code>Block Launcher</code> 文件夹。</p>
+      </div>
+      <div class="step">
+        <h3>选版本，启动</h3>
+        <p>下载页挑正式版或整合包；也可以「添加已有的游戏目录」，直接接管官方启动器 / PCL / HMCL 的 .minecraft。</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="about">
+    <h2>关于这个项目</h2>
+    <p class="sub">开源、非商业、个人维护。</p>
+
+    <div class="note">
+      <p><b>关于 OpenLauncher</b></p>
+      <p>本项目基于 <a href="https://honghemc.cn/app/openlauncher.html">OpenLauncher</a> 启动器二次开发。OpenLauncher 由社区开发者编写，以 GPL-3.0 开源。</p>
+      <p>感谢 OpenLauncher 的作者与贡献者——没有他们的工作，就没有 Block Launcher。</p>
+    </div>
+
+    <div class="grid" style="margin-top:18px">
+      <div class="card">
+        <span class="ico">⚖️</span>
+        <h3>GPL-3.0</h3>
+        <p>源码完整开放，可以自己编译、自己改、自己发自己的版本。</p>
+      </div>
+      <div class="card">
+        <span class="ico">💬</span>
+        <h3>没有广告与付费</h3>
+        <p>不卖皮肤、不卖加速、不挂推广位。非商业个人项目。</p>
+      </div>
+      <div class="card">
+        <span class="ico">🧭</span>
+        <h3>与 Mojang 无关</h3>
+        <p>Minecraft 是 Mojang AB 的商标。本启动器不包含任何游戏文件。</p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap row">
+    <span>© 2026 Block Launcher · GPL-3.0</span>
+    <a href="https://github.com/xiaojiubuchiyao/BlockLauncher">源码</a>
+    <a href="https://github.com/xiaojiubuchiyao/BlockLauncher/releases">所有版本</a>
+    <a href="https://github.com/xiaojiubuchiyao/BlockLauncher/issues">反馈</a>
+    <span class="sep">基于 OpenLauncher 二次开发</span>
+  </div>
+</footer>
+
+</body>
+</html>
