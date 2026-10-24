@@ -15,8 +15,6 @@
 
 ---
 
-**我们不包更新，但保证你不需要我们也能一直用、一直更新。**
-
 - 游戏、加载器、Mod 全部直接从官方源和公益镜像下载，版本列表实时获取，启动器不内置任何版本号。
 - 启动器自己的更新走**签名清单**：任何人都能镜像分发，只有签名对得上才会安装；维护者失联时社区可以换钥匙接手。
 - 不收集任何数据。账号令牌用 Windows DPAPI 加密，只存在你这台电脑上。
@@ -38,6 +36,8 @@
 | 动态 | 启动页展示最新正式版 / 快照、官方资讯、Modrinth 热门 Mod，每天联网更新一次，也可手动刷新 |
 
 ## 下载使用
+
+**官网 / 产品页**：<https://xiaojiubuchiyao.github.io/BlockLauncher/> —— 一页看懂这是什么、怎么用。
 
 从 [GitHub Releases](https://github.com/xiaojiubuchiyao/BlockLauncher/releases) 下载最新的 `BlockLauncher.exe`，放进一个空文件夹双击即可（Windows 10 / 11 自带 .NET Framework 4.8，无需安装任何东西）。
 游戏文件默认放在 exe 旁边的 `.minecraft`，启动器配置在 `Block Launcher` 文件夹里——整个文件夹拷走就能在别的电脑上用。
